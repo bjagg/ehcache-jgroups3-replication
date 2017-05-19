@@ -17,13 +17,13 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
+import java.util.Properties;
+
 import net.sf.ehcache.event.CacheEventListener;
 import net.sf.ehcache.event.CacheEventListenerFactory;
 import net.sf.ehcache.util.PropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
 
 /**
  * @author Pierre Monestie (pmonestie__REMOVE__THIS__@gmail.com)
@@ -63,15 +63,15 @@ public class JGroupsCacheReplicatorFactory extends CacheEventListenerFactory {
         boolean replicateUpdatesViaCopy = extractBooleanProperty(properties, REPLICATE_UPDATES_VIA_COPY, false);
         boolean replicateRemovals = extractBooleanProperty(properties, REPLICATE_REMOVALS, true);
         boolean replicateAsync = extractBooleanProperty(properties, REPLICATE_ASYNCHRONOUSLY, true);
-        
-        
+
+
         if (replicateAsync) {
             long asyncTime = extractAsynchronousReplicationIntervalMillis(properties);
-            
+
             return new JGroupsCacheReplicator(replicatePuts, replicateUpdates, replicateUpdatesViaCopy,
                     replicateRemovals, asyncTime);
         }
-        
+
         return new JGroupsCacheReplicator(replicatePuts, replicateUpdates, replicateUpdatesViaCopy,
                 replicateRemovals);
     }
@@ -107,7 +107,7 @@ public class JGroupsCacheReplicatorFactory extends CacheEventListenerFactory {
         if (booleanCandidate != null) {
             return Boolean.parseBoolean(booleanCandidate);
         }
-        
+
         return defaultValue;
     }
 }

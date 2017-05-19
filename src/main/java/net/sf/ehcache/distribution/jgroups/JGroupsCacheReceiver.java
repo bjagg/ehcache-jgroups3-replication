@@ -23,7 +23,6 @@ import java.util.List;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-
 import net.sf.ehcache.util.CacheTransactionHelper;
 import org.jgroups.Address;
 import org.jgroups.Message;
@@ -34,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Handles {@link Receiver} functions around for a {@link CacheManager}
- * 
+ *
  * @author Eric Dalquist
  * @version $Revision$
  */
@@ -60,40 +59,40 @@ public class JGroupsCacheReceiver implements Receiver {
             LOG.warn("Recieved an empty or null Message: {}", msg);
             return;
         }
-        
+
         final Object object = msg.getObject();
         if (object == null) {
             LOG.warn("Recieved a Message with a null object: {}", msg);
             return;
         }
-        
+
         if (object instanceof JGroupEventMessage) {
             this.safeHandleJGroupNotification((JGroupEventMessage)object);
         } else if (object instanceof List<?>) {
             final List<?> messages = (List<?>)object;
             LOG.trace("Recieved List of {} JGroupEventMessages", messages.size());
-            
+
             for (final Object message : messages) {
                 if (message == null) {
                     continue;
                 }
-                
+
                 if (message instanceof JGroupEventMessage) {
                     this.safeHandleJGroupNotification((JGroupEventMessage) message);
                 } else {
-                    LOG.warn("Recieved message of type " + List.class + " but member was of type '" + message.getClass() + 
+                    LOG.warn("Recieved message of type " + List.class + " but member was of type '" + message.getClass() +
                             "' and not " + JGroupEventMessage.class + ". Member ignored: " + message);
                 }
             }
         } else {
-            LOG.warn("Recieved message with payload of type " + object.getClass() + 
-                    " and not " + JGroupEventMessage.class + 
+            LOG.warn("Recieved message with payload of type " + object.getClass() +
+                    " and not " + JGroupEventMessage.class +
                     " or List<" + JGroupEventMessage.class.getSimpleName() + ">. Message: " + msg + " payload " + object);
         }
     }
-    
+
     /* ********** Local Methods ********** */
-    
+
     /**
      * Have to do a little helper method like this to get around the checkstyle cyclomatic check
      */
@@ -115,7 +114,7 @@ public class JGroupsCacheReceiver implements Receiver {
             }
         }
     }
-    
+
     private void handleJGroupNotification(final JGroupEventMessage message) {
         final String cacheName = message.getCacheName();
 
@@ -154,7 +153,7 @@ public class JGroupsCacheReceiver implements Receiver {
             LOG.warn("Received message {} for cache that does not exist: {}", message, cacheName);
             return;
         }
-        
+
         switch (message.getEvent()) {
             case JGroupEventMessage.REMOVE_ALL: {
                 LOG.debug("received remove all:      cache={}", cacheName);
@@ -167,7 +166,7 @@ public class JGroupsCacheReceiver implements Receiver {
                     LOG.debug("received remove:          cache={}, key={}", cacheName, serializableKey);
                     cache.remove(serializableKey, true);
                 } else if (LOG.isTraceEnabled()) {
-                    LOG.trace("received remove:          cache={}, key={} - Ignoring, key is not in the local cache.", 
+                    LOG.trace("received remove:          cache={}, key={} - Ignoring, key is not in the local cache.",
                             cacheName, serializableKey);
                 }
                 break;
@@ -178,13 +177,13 @@ public class JGroupsCacheReceiver implements Receiver {
                 cache.put(message.getElement(), true);
                 break;
             }
-            default: { 
+            default: {
                 LOG.warn("Unknown JGroupsEventMessage type recieved, ignoring message: " + message);
                 break;
             }
         }
     }
-    
+
     /* ********** Unused ********** */
 
     /**

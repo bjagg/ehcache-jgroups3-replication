@@ -17,13 +17,13 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
+import java.util.Properties;
+
 import net.sf.ehcache.bootstrap.BootstrapCacheLoader;
 import net.sf.ehcache.bootstrap.BootstrapCacheLoaderFactory;
 import net.sf.ehcache.util.PropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
 
 
 /**
@@ -76,7 +76,7 @@ public class JGroupsBootstrapCacheLoaderFactory extends BootstrapCacheLoaderFact
         } else {
             LOG.debug("Creating JGroups BootstrapCacheLoader with configuration:\n{}", properties);
         }
-        
+
         boolean bootstrapAsynchronously = extractAndValidateBootstrapAsynchronously(properties);
         int maximumChunkSizeBytes = extractMaximumChunkSizeBytes(properties);
         return new JGroupsBootstrapCacheLoader(bootstrapAsynchronously, maximumChunkSizeBytes);
@@ -91,7 +91,7 @@ public class JGroupsBootstrapCacheLoaderFactory extends BootstrapCacheLoaderFact
         if (maximumChunkSizeBytesString == null) {
             return DEFAULT_MAXIMUM_CHUNK_SIZE_BYTES;
         }
-        
+
         int maximumChunkSizeBytesCandidate;
         try {
             maximumChunkSizeBytesCandidate = Integer.parseInt(maximumChunkSizeBytesString);
@@ -99,9 +99,9 @@ public class JGroupsBootstrapCacheLoaderFactory extends BootstrapCacheLoaderFact
             LOG.warn("Number format exception trying to set chunk size to '{}'. Using the default instead.", maximumChunkSizeBytesString);
             return DEFAULT_MAXIMUM_CHUNK_SIZE_BYTES;
         }
-        
+
         if ((maximumChunkSizeBytesCandidate < FIVE_KB) || (maximumChunkSizeBytesCandidate > ONE_HUNDRED_MB)) {
-            LOG.warn("Trying to set the chunk size to an unreasonable number: {}. Using the default instead.", 
+            LOG.warn("Trying to set the chunk size to an unreasonable number: {}. Using the default instead.",
                     maximumChunkSizeBytesCandidate);
             return DEFAULT_MAXIMUM_CHUNK_SIZE_BYTES;
         }
@@ -118,7 +118,7 @@ public class JGroupsBootstrapCacheLoaderFactory extends BootstrapCacheLoaderFact
         if (bootstrapAsynchronouslyString != null) {
             return Boolean.parseBoolean(bootstrapAsynchronouslyString);
         }
-        
+
         return true;
     }
 }

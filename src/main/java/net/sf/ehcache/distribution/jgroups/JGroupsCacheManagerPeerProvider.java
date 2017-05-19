@@ -17,6 +17,12 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+
+import javax.management.MBeanServer;
+
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -29,11 +35,6 @@ import org.jgroups.jmx.JmxConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.MBeanServer;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * The main Jgroup class for replication via JGroup. Starts up the Jgroup communication bus and listen for message in
  * the bus. Because of Ehcache design we have to register this as a CachePeer. In reality this class listen for change
@@ -44,31 +45,31 @@ import java.util.List;
  * @version $Id: JGroupsCacheManagerPeerProvider.java 2608 2010-08-05 06:06:01Z gluck $
  */
 public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerProvider {
-    
+
     /**
      * Constant that defines the value returned by {@link #getScheme()}
      */
     public static final String SCHEME_NAME = "JGroups";
-    
+
     private static final String JMX_DOMAIN_NAME = "JGroupsReplication";
 
     private static final Logger LOG = LoggerFactory.getLogger(JGroupsCacheManagerPeerProvider.class.getName());
-    
+
     private final CacheManager cacheManager;
     private final String groupProperties;
     private final URL groupUrl;
     private String channelName;
-    
+
     private JChannel channel;
     private JGroupsCachePeer cachePeer;
     private JGroupsCacheReceiver cacheReceiver;
     private List<CachePeer> cachePeersListCache;
-    
+
     private JGroupsBootstrapManager bootstrapManager;
-    
+
     private MBeanServer mBeanServer;
-    
-    
+
+
     /**
      * Construct a new JGroupsCacheManagerPeerProvider with a specific JGroups connection String
      *
@@ -80,7 +81,7 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
         this.groupProperties = properties;
         this.groupUrl = null;
     }
-    
+
     /**
      * Construct a new JGroupsCacheManagerPeerProvider with a specific JGroups connection String
      *
@@ -92,7 +93,7 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
         this.groupProperties = null;
         this.groupUrl = configUrl;
     }
-    
+
     /**
      * Set the name of the JChannel, if null the cache manager name is used.
      */
@@ -140,45 +141,45 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
             LOG.error("Failed to create JGroups Channel, replication will not function. JGroups properties:\n" + this.groupProperties, e);
             this.dispose();
             return;
-        }                               
+        }
 
         final String clusterName = this.getClusterName();
-        
+
         this.cachePeer = new JGroupsCachePeer(this.channel, clusterName);
         this.bootstrapManager = new JGroupsBootstrapManager(clusterName, this.cachePeer, this.cacheManager);
         this.cacheReceiver = new JGroupsCacheReceiver(this.cacheManager, this.bootstrapManager);
         this.channel.setReceiver(this.cacheReceiver);
         this.channel.setDiscardOwnMessages(true);
-        
+
         try {
             this.channel.connect(clusterName);
         } catch (Exception e) {
-            LOG.error("Failed to connect to JGroups cluster '" + clusterName + 
+            LOG.error("Failed to connect to JGroups cluster '" + clusterName +
                     "', replication will not function. JGroups properties:\n" + this.groupProperties, e);
             this.dispose();
             return;
         }
-        
+
         this.cachePeersListCache = Collections.singletonList((CachePeer)this.cachePeer);
-        
-        
-        
+
+
+
         LOG.info("JGroups Replication started for '" + clusterName + "'. JChannel: {}", this.channel.toString(true));
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void register(MBeanServer mBeanServer) {
         this.mBeanServer = mBeanServer;
-        
+
         try {
             final String clusterName = this.getClusterName();
             JmxConfigurator.registerChannel(this.channel, mBeanServer, JMX_DOMAIN_NAME, clusterName, true);
             LOG.debug("Registered JGroups channel with MBeanServer under domain {} with name {}", JMX_DOMAIN_NAME, clusterName);
         } catch (Exception e) {
             LOG.error("Error occured while registering MBeans. Management of JGroups will not be enabled.", e);
-        }        
+        }
     }
 
     /**
@@ -189,12 +190,12 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
             this.bootstrapManager.dispose();
             this.bootstrapManager = null;
         }
-        
+
         this.shutdownCachePeer();
-        
+
         this.shutdownChannel();
     }
-    
+
     private void shutdownCachePeer() {
         if (this.cachePeer != null) {
             this.cachePeersListCache = null;
@@ -203,21 +204,21 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
             this.cachePeer = null;
         }
     }
-    
+
     private void shutdownChannel() {
         if (this.channel != null) {
             final String clusterName = this.getClusterName();
-            
+
             if (this.mBeanServer != null) {
                 try {
                     JmxConfigurator.unregisterChannel(this.channel, mBeanServer, JMX_DOMAIN_NAME, clusterName);
                     LOG.debug("Unregistered JGroups channel with MBeanServer under domain {} with name {}", JMX_DOMAIN_NAME, clusterName);
                 } catch (Exception e) {
-                    LOG.error("Error unregistering JGroups channel with MBeanServer under domain " + JMX_DOMAIN_NAME + 
+                    LOG.error("Error unregistering JGroups channel with MBeanServer under domain " + JMX_DOMAIN_NAME +
                             " with name " + clusterName, e);
                 }
             }
-            
+
             if (this.channel.isConnected()) {
                 try {
                     this.channel.close();
@@ -226,7 +227,7 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
                     LOG.error("Error closing JChannel for cluster " + clusterName, e);
                 }
             }
-            
+
             this.channel = null;
         }
     }
@@ -275,7 +276,7 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
     public void unregisterPeer(String rmiUrl) {
         //Ignore, only used for RMI
     }
-    
+
     /**
      * @return the JGroupsBootstrapManager
      */
@@ -296,19 +297,19 @@ public class JGroupsCacheManagerPeerProvider implements ManagedCacheManagerPeerP
 
         return Status.STATUS_ALIVE;
     }
-    
+
     /**
-     * @return The cluster name for JMX registration 
+     * @return The cluster name for JMX registration
      */
     public String getClusterName() {
         if (this.channelName != null) {
             return this.channelName;
         }
-        
+
         if (this.cacheManager.isNamed()) {
             return this.cacheManager.getName();
         }
-        
+
         return "EH_CACHE";
     }
 }

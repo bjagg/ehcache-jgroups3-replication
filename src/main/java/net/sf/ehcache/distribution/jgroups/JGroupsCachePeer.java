@@ -16,16 +16,6 @@
 
 package net.sf.ehcache.distribution.jgroups;
 
-import net.sf.ehcache.Element;
-import net.sf.ehcache.distribution.CachePeer;
-import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.Message;
-import org.jgroups.View;
-import org.jgroups.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -37,6 +27,16 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+
+import net.sf.ehcache.Element;
+import net.sf.ehcache.distribution.CachePeer;
+import org.jgroups.Address;
+import org.jgroups.Channel;
+import org.jgroups.Message;
+import org.jgroups.View;
+import org.jgroups.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles {@link CachePeer}functions around a JGroups {@link Channel} and a
@@ -135,7 +135,7 @@ public class JGroupsCachePeer implements CachePeer {
      */
     public void send(Address dest, List<JGroupEventMessage> eventMessages) {
         if (!this.alive || eventMessages == null || eventMessages.isEmpty()) {
-            LOG.warn("Ignoring send request of {} messages. Replicator alive = {}", 
+            LOG.warn("Ignoring send request of {} messages. Replicator alive = {}",
                     eventMessages == null ? null : eventMessages.size() , this.alive);
             return;
         }
@@ -194,7 +194,7 @@ public class JGroupsCachePeer implements CachePeer {
         } else {
             toSend = (Serializable)dataList;
         }
-        
+
         //Serialize the data into a byte[] for sending
         final byte[] data;
         try {
@@ -203,7 +203,7 @@ public class JGroupsCachePeer implements CachePeer {
             LOG.error("Error serializing data, it will not be sent: " + toSend, e);
             return;
         }
-        
+
         //Send it off to the group
         final Message msg = new Message(dest, null, data);
         try {

@@ -42,17 +42,17 @@ public class JGroupEventMessage extends LegacyEventMessage {
      * Reply to bootstrap
      */
     public static final int BOOTSTRAP_RESPONSE = 11;
-    
+
     /**
      * Bootstrap complete
      */
     public static final int BOOTSTRAP_COMPLETE = 12;
-    
+
     /**
      * Bootstrap could not be completed for some reason
      */
     public static final int BOOTSTRAP_INCOMPLETE = 13;
-    
+
     /**
      * Serialization ID
      */
@@ -69,7 +69,7 @@ public class JGroupEventMessage extends LegacyEventMessage {
         this.cacheName = cacheName;
         this.asyncTime = -1;
     }
-    
+
 
     /**
      * An event message for the JGroupsCacheReplicator. We keep as transient the
@@ -83,19 +83,19 @@ public class JGroupEventMessage extends LegacyEventMessage {
      * @param asyncTime the asynchronous replication period for this message, -1 results in synchronous replication
      */
     public JGroupEventMessage(int event, Serializable key, Element element, String cacheName,
-            long asyncTime) {
+                              long asyncTime) {
         super(event, key, element);
         this.cacheName = cacheName;
         this.asyncTime = asyncTime;
     }
-    
+
     /**
-     * @return If asynchronous 
+     * @return If asynchronous
      */
     public boolean isAsync() {
         return this.asyncTime >= 0;
     }
-    
+
     /**
      * @return The asynchronous replication delay, if less than 0 no synchronous replication is used.
      */
@@ -111,15 +111,15 @@ public class JGroupEventMessage extends LegacyEventMessage {
     public String getCacheName() {
         return cacheName;
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public String toString() {
-        return "JGroupEventMessage [event=" + getEventName(this.getEvent()) + 
-            ", cacheName=" + this.cacheName + 
-            ", serializableKey=" + this.getSerializableKey() + 
+        return "JGroupEventMessage [event=" + getEventName(this.getEvent()) +
+            ", cacheName=" + this.cacheName +
+            ", serializableKey=" + this.getSerializableKey() +
             ", element=" + this.getElement() + "]";
     }
 
